@@ -1,0 +1,2 @@
+# Infrastructure Repository
+This repository contains the infrastructure code for Modgy project. It includes configuration files and scripts for managing the project's infrastructure using Ansible, Terraform, Kubernetes, and settings for deploying a test environment with Docker Compose and Nginx.

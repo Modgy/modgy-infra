@@ -1,0 +1,64 @@
+services:
+  db:
+    container_name: modgy_db
+    image: postgres:13.7-alpine
+    ports:
+      - "6432:5432"
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - modgy_postgres_data:/var/lib/postgresql/data/
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin -d pethotel"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  back:
+    container_name: modgy_back
+    image: modgy/modgy-back:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+
+  front:
+    container_name: modgy-front
+    image: modgy/modgy-front:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+
+  nginx:
+    container_name: modgy-nginx
+    image: nginx:stable-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: unless-stopped
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./log/nginx:/var/log/nginx/
+      - ./ssl/certs:/etc/nginx/ssl/certs
+      - ./ssl/private:/etc/nginx/ssl/private
+    
+    depends_on:
+      back:
+        condition: service_healthy
+      front:
+        condition: service_healthy
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    
+
+volumes:
+  modgy_postgres_data:
+    external: true

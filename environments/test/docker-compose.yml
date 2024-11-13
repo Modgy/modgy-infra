@@ -1,7 +1,7 @@
 services:
   db:
     container_name: modgy_db
-    image: postgres:13.7-alpine
+    image: postgres:17-alpine3.20
     ports:
       - "6432:5432"
     restart: unless-stopped

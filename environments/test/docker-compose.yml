@@ -50,6 +50,8 @@ services:
         condition: service_healthy
       front:
         condition: service_healthy
+      minio:
+        condition: service_healthy
     
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/"]
@@ -58,7 +60,24 @@ services:
       retries: 5
       start_period: 10s
     
+  minio:
+    container_name: minio
+    image: minio/minio
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - modgy_minio_data:/data
+    command: server /data --console-address ":9001"
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 volumes:
   modgy_postgres_data:
+    external: true
+  modgy_minio_data:
     external: true
